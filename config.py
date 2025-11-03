@@ -1,10 +1,10 @@
 # config.py
 import os
 from dataclasses import dataclass
-from dotenv import load_dotenv
+#from dotenv import load_dotenv
 
 # Подтягиваем переменные из .env при запуске любого процесса
-load_dotenv()
+#load_dotenv()
 
 def _parse_admin_ids(s):
     return [int(x.strip()) for x in (s or "").split(",") if x.strip()]

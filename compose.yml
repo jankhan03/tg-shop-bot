@@ -52,14 +52,15 @@ services:
       dockerfile: docker/server.Dockerfile
     env_file: .env
     environment:
-      DB_URL: ${DB_URL:-postgresql+psycopg2://shop:shop@db:5432/shop}
+      DATABASE_URL: ${DB_URL:-postgresql+asyncpg://shop:shop@db:5432/shop}
       UVICORN_APP: ${UVICORN_APP:-server.main:app}
     volumes:
       - ./media:/app/media
     expose:
       - "8000"
     depends_on:
-      - db
+      db:
+         condition: service_healthy
     labels:
       - traefik.enable=true
 
@@ -73,7 +74,7 @@ services:
       - traefik.http.routers.api-http.rule=Host(`${DOMAIN}`) && PathPrefix(`/api`)
       - traefik.http.routers.api-http.entrypoints=web
       - traefik.http.routers.api-http.middlewares=redirect-to-https
-
+      - traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https
     restart: unless-stopped
 
   bot:
@@ -88,7 +89,10 @@ services:
       API_URL: http://server:8000
     depends_on:
       - server
+    volumes:
+      - ./media:/app/media
     restart: unless-stopped
+    command: sh -c "sleep 5 && python bot.py"
 
   admin_bot:
     build:
@@ -100,9 +104,14 @@ services:
     env_file: .env
     environment:
       API_URL: http://server:8000
+      DATABASE_URL: ${DB_URL:-postgresql+asyncpg://shop:shop@db:5432/shop}
     depends_on:
       - server
+    volumes:
+      - ./media:/app/media
     restart: unless-stopped
+    command: sh -c "sleep 15 && python admin_bot.py"
+    #command: tail -f /dev/null
 
   db:
     image: postgres:15-alpine
@@ -113,6 +122,13 @@ services:
     volumes:
       - dbdata:/var/lib/postgresql/data
     restart: unless-stopped
+    healthcheck: # <-- ДОБАВЬТЕ ВСЮ ЭТУ СЕКЦИЮ
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    ports:
+      - '5432:5432'
 
   adminer:
     image: adminer

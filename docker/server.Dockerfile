@@ -11,8 +11,8 @@ RUN pip install --no-cache-dir -r /app/server/requirements.txt
 
 # копируем ваш серверный код
 COPY server /app/server
+COPY config.py /app/config.py
 # на случай, если он читает конфиг/окружение из корня
 COPY .env /app/.env
 
-ENV UVICORN_APP=server.main:app
-CMD ["sh", "-c", "uvicorn \"$UVICORN_APP\" --host 0.0.0.0 --port 8000 --proxy-headers"]
+CMD ["sh", "-c", "uvicorn server.main:app --host 0.0.0.0 --port 8000 --proxy-headers"]

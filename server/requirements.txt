@@ -1,3 +1,4 @@
+aiogram
 fastapi
 uvicorn[standard]
 SQLAlchemy
@@ -6,3 +7,4 @@ python-dotenv
 pydantic
 aiofiles
 python-multipart
+asyncpg

@@ -520,18 +520,18 @@ async def id_addphoto_flow(m: Message, state: FSMContext):
     await m.answer(f"Ок. Жду фото для #{pid}. Завершение — /done", parse_mode=None)
 
 
-# ---------- entry point ----------
 async def main():
     if not settings.ADMIN_BOT_TOKEN:
         raise RuntimeError("Нужен ADMIN_BOT_TOKEN")
 
     os.makedirs(settings.MEDIA_ROOT, exist_ok=True)
+
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
 
     await setup_bot_ui()
-    await dp.start_polling(bot)
 
+    await dp.start_polling(bot)
 
 if __name__ == "__main__":
     asyncio.run(main())

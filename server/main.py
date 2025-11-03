@@ -19,7 +19,7 @@ from server.models import Product
 app = FastAPI()
 
 # ---- статика ----
-app.mount("/webapp", StaticFiles(directory="webapp", html=True), name="webapp")
+#app.mount("/webapp", StaticFiles(directory="webapp", html=True), name="webapp")
 app.mount("/media", StaticFiles(directory=settings.MEDIA_ROOT), name="media")
 
 # ---- фиксированный список (для сортировки выдачи /api/categories) ----
