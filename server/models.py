@@ -1,5 +1,5 @@
-from typing import Optional, List
-from sqlalchemy import Integer, String, Float, DateTime, ForeignKey, Boolean, func
+from typing import List
+from sqlalchemy import Integer, String, Float, DateTime, ForeignKey, Boolean, func, Column, BigInteger
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from server.db import Base
 
@@ -37,3 +37,16 @@ class ProductImage(Base):
     sort_order: Mapped[int] = mapped_column(Integer, default=0)
 
     product: Mapped[Product] = relationship("Product", back_populates="images")
+
+
+class User(Base):
+    __tablename__ = "users"
+
+    id = Column(BigInteger, primary_key=True)
+    mobile_number = Column(String(20))
+    username = Column(String(50))
+    name = Column(String(100))
+    first_entry = Column(
+        DateTime(timezone=True),
+        default=func.now(),
+    )
