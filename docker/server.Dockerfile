@@ -11,6 +11,7 @@ RUN pip install --no-cache-dir -r /app/server/requirements.txt
 
 # копируем ваш серверный код
 COPY server /app/server
+COPY bot /app/bot
 COPY config.py /app/config.py
 # на случай, если он читает конфиг/окружение из корня
 COPY .env /app/.env
