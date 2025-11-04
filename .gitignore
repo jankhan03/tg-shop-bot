@@ -5,3 +5,5 @@ letsencrypt/
 media/
 
 .venv
+
+.env
