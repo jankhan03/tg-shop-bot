@@ -1,4 +1,5 @@
 from typing import List
+from enum import Enum
 from sqlalchemy import Integer, String, Float, DateTime, ForeignKey, Boolean, func, Column, BigInteger
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from server.db import Base
@@ -50,3 +51,18 @@ class User(Base):
         DateTime(timezone=True),
         default=func.now(),
     )
+
+
+class UserLog(Base):
+    __tablename__ = "user_logs"
+    id = Column(BigInteger, primary_key=True, autoincrement=True)
+    user_id = Column(BigInteger)
+    action = Column(String(50))
+    datetime = Column(
+        DateTime(timezone=True),
+        default=func.now(),
+    )
+
+
+class UserLogAction(Enum):
+    WEB_APP_OPENED = "web_app_opened"

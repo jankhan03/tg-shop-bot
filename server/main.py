@@ -1,6 +1,6 @@
 from typing import List, Optional, Dict
 import json, hmac, hashlib, urllib.parse
-
+from bot.bot import get_user
 from fastapi import FastAPI, Depends, Request, HTTPException
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
@@ -13,8 +13,8 @@ from aiogram.client.default import DefaultBotProperties
 from aiogram.exceptions import TelegramBadRequest, TelegramForbiddenError, TelegramNetworkError
 
 from config import settings
-from server.db import get_session
-from server.models import Product
+from server.db import SessionLocal, get_session
+from server.models import Product, UserLog, UserLogAction
 
 app = FastAPI()
 
@@ -87,6 +87,16 @@ class ProductOut(BaseModel):
 class CategoryOut(BaseModel):
     name: str
     count: int
+
+
+class WebAppUser(BaseModel):
+    id: int
+    is_bot: Optional[bool] = None
+    first_name: str
+    last_name: Optional[str] = None
+    username: Optional[str] = None
+    language_code: Optional[str] = None
+    is_premium: Optional[bool] = None
 
 
 def _map_product(request: Request, p: Product) -> ProductOut:
@@ -182,6 +192,26 @@ async def categories(s: AsyncSession = Depends(get_session)):
         if name not in seen:
             out.append(CategoryOut(name=name, count=cnt))
     return out
+
+
+@app.post("/api/webapp-opened")
+async def webapp_opened(
+    user_data: WebAppUser,
+):
+    # Get user
+    db_user = await get_user(
+        id=user_data.id,
+    )
+    user_log = UserLog(
+        user_id=db_user.id,
+        action=UserLogAction.WEB_APP_OPENED.value,
+    )
+    async with SessionLocal() as db:
+        db.add(user_log)
+        await db.commit()
+        await db.refresh(user_log)
+
+    return {"status": "ok"}
 
 
 # ---- приём заказа и пересылка в TG ----

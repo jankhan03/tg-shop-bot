@@ -1,5 +1,6 @@
 <!doctype html>
 <html lang="ru">
+<head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Магазин</title>
@@ -140,6 +141,7 @@
   .sheet-actions{ display:flex; gap:8px; margin-top:12px }
   .sheet-actions .btn-blue{ flex:1 }
 </style>
+</head>
 
 <body>
   <div class="wrap">
@@ -250,7 +252,7 @@
     </div>
   </div>
 
-  <script>
+<script>
     const tg = window.Telegram?.WebApp; tg?.ready(); tg?.expand();
     const API = new URL(location.href).origin + '/api';
     const placeholder = '/webapp/placeholder.jpg';
@@ -659,7 +661,39 @@
       if (location.hash.startsWith('#product=')) history.pushState({}, '', '#');
       refreshAddButtonsState();
     }
+    
+    // ===================================================================
+    // ===== НОВЫЙ КОД ДЛЯ ОТСЛЕЖИВАНИЯ ОТКРЫТИЯ WEBAPP ===================
+    // ===================================================================
+    async function notifyBackendUserOpened() {
+        if (!hasTelegramUser()) {
+            console.log("WebApp открыт вне Telegram, уведомление не отправляется.");
+            return;
+        }
 
+        const userData = tg.initDataUnsafe.user;
+        if (!userData) {
+            console.error("Не удалось получить данные пользователя из Telegram.");
+            return;
+        }
+        
+        try {
+            const response = await fetch(`${API}/webapp-opened`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(userData)
+            });
+            if (response.ok) {
+                console.log("Уведомление об открытии WebApp успешно отправлено на бэкенд.");
+            } else {
+                console.error("Ошибка при отправке уведомления на бэкенд.");
+            }
+        } catch (error) {
+            console.error("Сетевая ошибка при отправке уведомления:", error);
+        }
+    }
+    // ===================================================================
+    
     /* Actions */
     document.getElementById('btn-search').addEventListener('click', load);
     q.addEventListener('keydown', (e)=>{ if(e.key==='Enter') load() });
@@ -670,6 +704,10 @@
 
     /* init */
     ;(async () => {
+      // ===== ВЫЗОВ НОВОЙ ФУНКЦИИ =====
+      await notifyBackendUserOpened();
+      // ===============================
+
       await loadCategoriesToFilters().catch(()=>{});
       await load();
       updateCartBadge();
@@ -688,6 +726,6 @@
         closeProduct();
       }
     });
-  </script>
+</script>
 </body>
 </html>

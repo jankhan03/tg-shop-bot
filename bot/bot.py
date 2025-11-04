@@ -1,5 +1,6 @@
 # bot/bot.py
 import asyncio
+from typing import Optional
 from sqlalchemy import select
 from aiogram import Bot, Dispatcher
 from aiogram.filters import CommandStart
@@ -35,6 +36,13 @@ async def save_user(
             await db.commit()
             await db.refresh(user)
             return user
+
+
+async def get_user(
+    id: int,
+) -> Optional[User]:
+    async with SessionLocal() as db:
+        return await db.scalar(select(User).where(User.id == id))
 
 
 @dp.message(CommandStart())
