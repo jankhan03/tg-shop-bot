@@ -198,6 +198,7 @@ async def categories(s: AsyncSession = Depends(get_session)):
 async def webapp_opened(
     user_data: WebAppUser,
 ):
+    print("In webapp_opened")
     # Get user
     db_user = await get_user(
         id=user_data.id,
