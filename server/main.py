@@ -1,6 +1,6 @@
 from typing import List, Optional, Dict
 import json, hmac, hashlib, urllib.parse
-from bot.bot import get_user
+from bot.bot import get_user, save_user
 from fastapi import FastAPI, Depends, Request, HTTPException
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
@@ -14,7 +14,7 @@ from aiogram.exceptions import TelegramBadRequest, TelegramForbiddenError, Teleg
 
 from config import settings
 from server.db import SessionLocal, get_session
-from server.models import Product, UserLog, UserLogAction
+from server.models import Product, User, UserLog, UserLogAction
 
 app = FastAPI()
 
@@ -199,9 +199,13 @@ async def webapp_opened(
     user_data: WebAppUser,
 ):
     print("In webapp_opened")
-    # Get user
-    db_user = await get_user(
-        id=user_data.id,
+    # save user
+    db_user = await save_user(
+        user=User(
+            id=user_data.id,
+            username=user_data.username,
+            name=user_data.first_name,
+        )
     )
     user_log = UserLog(
         user_id=db_user.id,
